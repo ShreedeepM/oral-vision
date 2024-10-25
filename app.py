@@ -10,7 +10,7 @@ with open("model_and_config.pk1", "rb") as f:
     config = pickle.load(f)
 
 model = timm.create_model("rexnet_150", pretrained=False, num_classes=len(config['classes']))
-model.load_state_dict(config['model_state_dict'])
+model.load_state_dict(config['model_state_dict'],map_location=torch.device('cpu'))
 model.eval()
 
 # Define classes from config
