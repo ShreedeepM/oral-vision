@@ -1,47 +1,62 @@
-import torch
-import pickle
-import timm
-from PIL import Image
-from torchvision import transforms
 import streamlit as st
+import torch
+from torchvision import transforms
+from PIL import Image
+import timm
+import io
 
-# Load model and configuration from pk1 file
-with open("model_and_config.pk1", "rb") as f:
-    config = pickle.load(f)
+# Load the model
+def load_model(model_name, num_classes, device):
+    model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
+    model_path = f'best_model/{model_name}_oral_disease_classifier.pth'
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+    return model
 
-# Create model instance
-model = timm.create_model("rexnet_150", pretrained=False, num_classes=len(config['classes']))
+# Image preprocessing function
+def preprocess_image(image):
+    transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    return transform(image).unsqueeze(0)
 
-# Load model state dict with map_location to CPU
-model.load_state_dict(config['model_state_dict'], map_location=torch.device('cpu'))
-model.eval()  # Set the model to evaluation mode
+# Define class names
+classes = ['Calculus', 'Caries', 'Gingivitis', 'Hypodontia', 'Tooth Discoloration', 'Ulcers']
 
-# Define classes from config
-classes = config['classes']
+# Streamlit app
+def main():
+    st.title("Oral Disease Detector")
+    
+    # File uploader
+    uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+    
+    if uploaded_file is not None:
+        # Read the image
+        image = Image.open(uploaded_file).convert('RGB')
+        
+        # Show the image
+        st.image(image, caption='Uploaded Image', use_column_width=True)
 
-# Define image preprocessing transformations
-preprocess = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize to 224x224
-    transforms.ToTensor(),           # Convert image to tensor
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # Normalize
-])
+        # Load the model
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model_name = 'efficientvit_b0'  # Default model name
+        model = load_model(model_name, len(classes), device)
 
-def predict_image(image):
-    input_tensor = preprocess(image).unsqueeze(0)  # Add batch dimension
-    with torch.no_grad():  # Disable gradient calculation
-        output = model(input_tensor)  # Forward pass
-        _, predicted = torch.max(output, 1)  # Get the class with the highest score
-        predicted_class = classes[predicted.item()]  # Map index to class name
-    return predicted_class
+        # Preprocess the image
+        processed_image = preprocess_image(image).to(device)
 
-# Streamlit UI
-st.title("Oral Disease Prediction")
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+        # Predict
+        with torch.no_grad():
+            outputs = model(processed_image)
+            _, predicted = torch.max(outputs, 1)
+            prediction = predicted.item()
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")  # Open image and convert to RGB
-    st.image(image, caption="Uploaded Image", use_column_width=True)  # Display uploaded image
-    st.write("Classifying...")  # Indicate classification in progress
+        # Display the prediction
+        st.write(f"Prediction: {classes[prediction]}")
 
-    predicted_disease = predict_image(image)  # Make prediction
-    st.write(f"The predicted oral disease is: **{predicted_disease}**")  # Display result
+if __name__ == "__main__":
+    main()
