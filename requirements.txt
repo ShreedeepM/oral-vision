@@ -1,5 +1,5 @@
-torch
- # Pickle is part of the Python standard library, so no version specification needed
-timm==1.0.11
-pytorch-lightning  # PTL refers to PyTorch Lightning, so specify it as 'pytorch-lightning' without a version if unknown
-torchvision==0.20.0
+streamlit==1.23.0
+torch==2.0.1
+torchvision==0.15.0
+timm==0.6.12
+Pillow==10.0.0
