@@ -29,7 +29,7 @@ classes = ['Calculus', 'Caries', 'Gingivitis', 'Hypodontia', 'Tooth Discoloratio
 
 # Streamlit app
 def main():
-    st.title("Oral Disease Detector")
+    st.title("Oral Vision: A Oral Disease Detector")
     
     # File uploader
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
