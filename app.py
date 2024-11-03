@@ -28,40 +28,40 @@ def preprocess_image(image):
 classes = ['Calculus', 'Caries', 'Gingivitis', 'Hypodontia', 'Tooth Discoloration', 'Ulcers']
 disease_info = {
     'Calculus': {
-        "description": "Calculus, also known as tartar, is hardened dental plaque that has been mineralized by calcium phosphate deposits.",
-        "causes": "It is caused by the accumulation of plaque due to irregular brushing and flossing.",
-        "treatment": "Professional dental cleaning is required to remove calculus deposits."
+        "description": "Calculus, also known as tartar, is a hardened form of dental plaque that builds up on teeth over time. It provides a surface for additional plaque to form, leading to more buildup and potential gum disease.",
+        "causes": "Calculus forms when plaque is not removed effectively, and the minerals in saliva harden it onto the teeth. Inadequate brushing and flossing, along with high-calcium saliva, increase the risk.",
+        "treatment": "Professional cleaning by a dentist or dental hygienist is necessary to remove calculus deposits. Regular brushing and flossing help prevent its formation."
     },
     'Caries': {
-        "description": "Dental caries, or cavities, are permanent damage to the enamel that develop into tiny holes in the teeth.",
-        "causes": "Caries are caused by acid-producing bacteria in the mouth, poor oral hygiene, and high sugar intake.",
-        "treatment": "Regular brushing and a visit to the dentist for potential fillings or fluoride treatments."
+        "description": "Dental caries, or cavities, are areas of tooth decay that create tiny openings or holes in the enamel, leading to pain and potential tooth loss if untreated.",
+        "causes": "Caries are caused by bacteria in the mouth that produce acids from sugars in food, which then erode tooth enamel. Poor oral hygiene, frequent snacking, and high sugar intake increase the risk.",
+        "treatment": "Treatment includes fluoride treatments for early-stage caries, fillings for moderate decay, and crowns or root canals for advanced decay. Good oral hygiene and reducing sugar intake can help prevent caries."
     },
     'Gingivitis': {
-        "description": "Gingivitis is inflammation of the gums, often a mild form of gum disease.",
-        "causes": "It is commonly caused by poor oral hygiene, which allows plaque to build up on the teeth.",
-        "treatment": "Improving oral hygiene and using antiseptic mouthwash can help; a professional cleaning may also be needed."
+        "description": "Gingivitis is a mild form of gum disease characterized by red, swollen, and bleeding gums. It is reversible with proper treatment but can lead to more severe gum disease if left untreated.",
+        "causes": "Gingivitis is commonly caused by plaque buildup along the gum line due to inadequate brushing and flossing. Hormonal changes, smoking, and certain medications can also contribute.",
+        "treatment": "Improving oral hygiene and professional cleaning can usually reverse gingivitis. Antiseptic mouthwashes and regular dental checkups are also recommended for management."
     },
     'Hypodontia': {
-        "description": "Hypodontia is a condition where one or more teeth are missing due to developmental issues.",
-        "causes": "It can be caused by genetic factors or developmental disorders.",
-        "treatment": "Consult a dentist for possible orthodontic treatment, bridges, or implants."
+        "description": "Hypodontia is a dental condition where one or more teeth fail to develop. It is a genetic condition that may affect primary or permanent teeth, potentially leading to spacing issues and misalignment.",
+        "causes": "Hypodontia is caused by genetic factors and may be associated with certain syndromes. Developmental factors during early tooth formation can also play a role.",
+        "treatment": "Treatment options include orthodontics to close gaps, dental bridges, or implants to replace missing teeth. Consultation with a dentist is recommended for individualized care."
     },
     'Tooth Discoloration': {
-        "description": "Tooth discoloration is the staining or yellowing of teeth, which can be extrinsic (surface stains) or intrinsic (within the tooth).",
-        "causes": "Common causes include consumption of staining foods, smoking, aging, and poor dental hygiene.",
-        "treatment": "Consider whitening options or a dental checkup to rule out underlying issues."
+        "description": "Tooth discoloration refers to the staining or darkening of teeth, which can occur on the surface (extrinsic) or within the tooth (intrinsic). It affects aesthetics and may signal other health issues.",
+        "causes": "Extrinsic discoloration is caused by foods, drinks, and smoking. Intrinsic discoloration can result from trauma, aging, certain medications, and excessive fluoride exposure.",
+        "treatment": "Treatment includes professional cleaning for extrinsic stains and whitening options for intrinsic stains. Maintaining good oral hygiene and avoiding staining substances can help prevent discoloration."
     },
     'Ulcers': {
-        "description": "Oral ulcers are painful sores that occur inside the mouth, often on the inner cheeks or lips.",
-        "causes": "They can be caused by stress, injury, or certain foods, and may be associated with other health conditions.",
-        "treatment": "Rinse with salt water, use prescribed mouth gels, and consult a dentist if they persist."
+        "description": "Oral ulcers, commonly known as canker sores, are painful lesions that appear on the soft tissues inside the mouth. They can make eating and speaking uncomfortable.",
+        "causes": "Causes include minor injuries, stress, certain acidic or spicy foods, and underlying health conditions. Frequent or recurrent ulcers may require further evaluation.",
+        "treatment": "Rinsing with salt water, avoiding spicy or acidic foods, and using prescribed mouth gels can alleviate discomfort. Persistent ulcers should be examined by a dentist or doctor."
     }
 }
 
 # Streamlit app
 def main():
-    st.title("Oral Vision: A Oral Disease Detector")
+    st.title("Oral Vision: An Oral Disease Detector")
     
     # File uploader
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -75,7 +75,7 @@ def main():
 
         # Load the model
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model_name = 'efficientvit_b0'  # Default model name
+        model_name = 'efficientvit_b0_oral_disease_classifier.pth'  # Default model name
         model = load_model(model_name, len(classes), device)
 
         # Preprocess the image
@@ -91,10 +91,10 @@ def main():
         disease = classes[prediction]
 
         # Display the prediction and detailed information
-        st.write(f"Prediction: {disease}")
-        st.write("Description:", disease_info[disease]["description"])
-        st.write("Causes:", disease_info[disease]["causes"])
-        st.write("Suggested Treatment:", disease_info[disease]["treatment"])
+        st.write(f"**Prediction:** {disease}")
+        st.write(f"**Description:** {disease_info[disease]['description']}")
+        st.write(f"**Causes:** {disease_info[disease]['causes']}")
+        st.write(f"**Suggested Treatment:** {disease_info[disease]['treatment']}")
 
 if __name__ == "__main__":
     main()
