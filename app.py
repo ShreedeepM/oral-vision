@@ -6,8 +6,26 @@ import timm
 import io
 
 # Load the model
+def load_model(model_name, num_classes, device):
+    model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
+    model_path = 'efficientvit_b0_oral_disease_classifier.pth'
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+    return model
+
+# Image preprocessing function
+def preprocess_image(image):
+    transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    return transform(image).unsqueeze(0)
+
 # Define class names and detailed descriptions with treatment suggestions
-classes = ['Calculus', 'Caries', 'Gingivitis', 'Hypodontia', 'Tooth Discoloration', 'Ulcers', 'Healthy Teeth']
+classes = ['Calculus', 'Caries', 'Gingivitis', 'Hypodontia', 'Tooth Discoloration', 'Ulcers']
 disease_info = {
     'Calculus': {
         "description": "Calculus, also known as tartar, is hardened dental plaque that has been mineralized by calcium phosphate deposits.",
@@ -38,17 +56,12 @@ disease_info = {
         "description": "Oral ulcers are painful sores that occur inside the mouth, often on the inner cheeks or lips.",
         "causes": "They can be caused by stress, injury, or certain foods, and may be associated with other health conditions.",
         "treatment": "Rinse with salt water, use prescribed mouth gels, and consult a dentist if they persist."
-    },
-    'Healthy Teeth': {
-        "description": "No signs of dental issues. Your teeth appear healthy.",
-        "causes": "Maintained through good oral hygiene and regular dental checkups.",
-        "treatment": "Continue with proper brushing, flossing, and regular visits to the dentist."
     }
 }
 
 # Streamlit app
 def main():
-    st.title("Oral Vision: A Oral Disease Detector")
+    st.title("Oral Vision: An Oral Disease Detector")
     
     # File uploader
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -62,8 +75,8 @@ def main():
 
         # Load the model
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model_name = 'efficientvit_b0_oral_disease_classifier.pth'  # Default model name
-        model = load_model(model_name, len(classes) - 1, device)  # Model without "Healthy Teeth" class
+        model_name = 'efficientvit_b0_oral_disease_classifier.pth'
+        model = load_model(model_name, len(classes), device)
 
         # Preprocess the image
         processed_image = preprocess_image(image).to(device)
@@ -72,15 +85,11 @@ def main():
         with torch.no_grad():
             outputs = model(processed_image)
             probabilities = torch.softmax(outputs, dim=1)
-            max_prob, predicted = torch.max(probabilities, 1)
+            _, predicted = torch.max(probabilities, 1)
             prediction = predicted.item()
 
-        # Check confidence threshold for "Healthy Teeth" classification
-        confidence_threshold = 0.7  # You can adjust this threshold based on your dataset
-        if max_prob < confidence_threshold:
-            disease = "Healthy Teeth"
-        else:
-            disease = classes[prediction]
+        # Get the predicted disease
+        disease = classes[prediction]
 
         # Display the prediction and detailed information
         st.write(f"Prediction: {disease}")
