@@ -75,7 +75,7 @@ def main():
 
         # Load the model
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model_name = 'efficientvit_b0_oral_disease_classifier.pth'  # Default model name
+        model_name = 'efficientvit_b0'  # Default model name
         model = load_model(model_name, len(classes), device)
 
         # Preprocess the image
