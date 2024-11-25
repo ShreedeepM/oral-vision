@@ -8,7 +8,7 @@ import io
 # Load the model
 def load_model(model_name, num_classes, device):
     model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
-    model_path = 'oral_disease_classifier.pth'
+    model_path = 'efficientvit_b0_oral_disease_classifier.pth'
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
